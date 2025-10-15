@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
+  "builds": [
+    {
+      "src": "web-build/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "outputDirectory": "web-build"
+}

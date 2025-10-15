@@ -28,3 +28,17 @@ Everything runs client-side via Expo APIs.
 - Auto-box uses simple luminance thresholding (fast, robust for black text on white).
 - PanResponder-based overlay works with touch + mouse.
 - ImageManipulator avoids heavy pixel work in JS for cropping result.
+
+## Deploy to Vercel (Web)
+
+1. Build the static bundle:
+   ```bash
+   npm run build:web
+   ```
+   This creates the `web-build/` directory with `index.html`, `static/`, etc.
+
+2. Deploy `web-build` on Vercel:
+   - Keep `vercel.json` at the project root (already included).
+   - Connect the repo to Vercel or upload; set output dir to `web-build` if prompted.
+
+3. Make sure your site is on **HTTPS** (Vercel defaults to HTTPS) so the camera works.
