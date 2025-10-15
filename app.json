@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Question Cropper",
+    "slug": "expo-question-cropper-final",
+    "scheme": "questioncropper",
+    "sdkVersion": "51.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
