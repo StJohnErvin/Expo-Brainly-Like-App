@@ -1,11 +1,55 @@
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, PanResponder, LayoutChangeEvent } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, StyleSheet, PanResponder, LayoutChangeEvent, Platform } from 'react-native';
+import { analyzeImageContent } from '../utils/imageAnalyzer';
 
-export default function CropBox({ imageSize, value, onChange }: any) {
+interface ImageSize {
+  uri: string;
+  width: number;
+  height: number;
+}
+
+interface CropBoxProps {
+  imageSize: ImageSize;
+  value: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  onChange: (rect: { x: number; y: number; width: number; height: number }) => void;
+}
+
+export default function CropBox({ imageSize, value, onChange }: CropBoxProps) {
   const [layout, setLayout] = useState({ x:0,y:0,width:0,height:0 });
   const [rect, setRect] = useState(value);
-  useEffect(()=>setRect(value),[value.x,value.y,value.width,value.height]);
+  useEffect(() => {
+    const detectQuestion = async () => {
+      try {
+        const detectedBounds = await analyzeImageContent(
+          imageSize.uri,
+          imageSize.width,
+          imageSize.height
+        );
+
+        // Convert the detected rectangle to crop box format
+        const newRect = {
+          x: detectedBounds.topLeft.x,
+          y: detectedBounds.topLeft.y,
+          width: detectedBounds.topRight.x - detectedBounds.topLeft.x,
+          height: detectedBounds.bottomLeft.y - detectedBounds.topLeft.y
+        };
+
+        setRect(newRect);
+        onChange(newRect);
+      } catch (error) {
+        console.error('Failed to detect question:', error);
+        setRect(value);
+      }
+    };
+
+    detectQuestion();
+  }, [imageSize.uri]);
   const onLayout = (e: LayoutChangeEvent) => setLayout(e.nativeEvent.layout);
   const fitted = useMemo(()=>{
     const containerRatio = (layout.width || 1) / Math.max(1, layout.height || 1);
@@ -102,7 +146,32 @@ export default function CropBox({ imageSize, value, onChange }: any) {
 }
 
 const styles = StyleSheet.create({
-  mask: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.25)' },
-  box: { position: 'absolute', borderWidth: 2, borderColor: '#1EAEDB', borderRadius: 8, backgroundColor: 'rgba(30,174,219,0.08)' },
-  handle: { position: 'absolute', borderRadius: 10, backgroundColor: '#1EAEDB' }
+  mask: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  box: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: '#1EAEDB',
+    borderRadius: 8,
+    backgroundColor: 'rgba(30,174,219,0.08)'
+  },
+  handle: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#1EAEDB',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  }
 });
