@@ -117,7 +117,7 @@ export default function CropBox({ imageSize, value, onChange }: CropBoxProps) {
     return { x: tl.sx, y: tl.sy, width: br.sx - tl.sx, height: br.sy - tl.sy };
   };
   const handleRects = (r:any) => {
-    const size = 20;
+    const size = 36; // larger touch target for one-handed use
     return {
       tl: { x: r.x - size/2, y: r.y - size/2, width: size, height: size },
       tr: { x: r.x + r.width - size/2, y: r.y - size/2, width: size, height: size },
@@ -138,8 +138,37 @@ export default function CropBox({ imageSize, value, onChange }: CropBoxProps) {
     <View style={StyleSheet.absoluteFill} onLayout={onLayout} {...pan.panHandlers}>
       <View style={[styles.mask]} />
       <View style={[styles.box, { left: srect.x, top: srect.y, width: srect.width, height: srect.height }]} />
+
+      {/* guide lines between corners */}
+      {(() => {
+        const corners = [
+          { x: srect.x, y: srect.y },
+          { x: srect.x + srect.width, y: srect.y },
+          { x: srect.x + srect.width, y: srect.y + srect.height },
+          { x: srect.x, y: srect.y + srect.height }
+        ];
+        return corners.map((c, i) => {
+          const next = corners[(i + 1) % corners.length];
+          const dx = next.x - c.x;
+          const dy = next.y - c.y;
+          const length = Math.sqrt(dx*dx + dy*dy);
+          const angle = Math.atan2(dy, dx) + 'rad';
+          return (
+            <View
+              key={`line-${i}`}
+              style={[
+                styles.guideLine,
+                { left: c.x, top: c.y, width: length, transform: [{ rotate: angle }] }
+              ]}
+            />
+          );
+        });
+      })()}
+
       {Object.entries(handles).map(([k,r]: any) => (
-        <View key={k} style={[styles.handle, { left: r.x, top: r.y, width: r.width, height: r.height }]} />
+        <View key={k} style={[styles.handle, { left: r.x, top: r.y, width: r.width, height: r.height }]}> 
+          <View style={styles.handleInner} />
+        </View>
       ))}
     </View>
   );
@@ -173,5 +202,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  }
+  ,
+  guideLine: {
+    position: 'absolute',
+    height: 2,
+    backgroundColor: '#1EAEDB',
+    opacity: 0.95,
+  },
+  handleInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    alignSelf: 'center',
+    marginTop: 6
   }
 });
